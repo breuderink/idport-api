@@ -12,33 +12,28 @@ int main(void)
   mp_init(&mp, "http://localhost:5000");
 
   printf("Sending an annotation...\n");
-  response = mp_post_annotation(&mp, user_id, stream_id, 
-      "game_loop_example", "tick");
-  printf("Done.\n");
-  while (1) {
+  response = mp_post_annotation(&mp, user_id, stream_id, "me", "Tick.");
 
+  while (1) {
     /* We hate interrupting the game. So we poll for a response: */
     mp_update(&mp);
 
     switch (response->status) {
       case MP_RESP_READY:
-        printf("And it is ready...");
         /* There is a complete response from the server. Lets extract a
          * probability from the "random" detector: */
+        printf("Done.\n");
         mp_response_destroy(response); /* Free slot for new requests. */
         exit(0);
 
       case MP_RESP_INVALID:
-        printf("And it is invalid...");
-        fprintf(stderr, "Cleaning up invalid response.\n");
         mp_response_destroy(response); /* Free slot for new requests. */
-        break;
+        exit(-1);
 
       default:
         break;
     }
 
-    printf("."); fflush(stdout);
     usleep(1e6/10);
   }
 

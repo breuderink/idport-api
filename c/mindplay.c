@@ -96,7 +96,6 @@ mp_response_t *mp_post_annotation(mp_api_t *mp,
   }
 
   /* Fire an asynchronous HTTP request. */
-  curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(handle, CURLOPT_URL, url);
   curl_easy_setopt(handle, CURLOPT_POSTFIELDS, "BLADIEBLA");
  
@@ -115,7 +114,6 @@ mp_response_t *mp_post_annotation(mp_api_t *mp,
 
   return response;
 }
-
 
 
 /* Update asynchronous transfers. */
