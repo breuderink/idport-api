@@ -19,58 +19,39 @@ int main(void)
     /* Four times a second, we request a detection from the server.
      * For simplicity, we don't have a queue for transfers in
      * progress, but that probably is a good idea. */
-    if (0 && frame % (FPS / 4) == 0) {
+    if (frame % (FPS / 4) == 0) {
       response = mp_get_detection(&mp, user_id, stream_id);
     }
-
-    /* We can also send messages to the server. The timing information
-     * is stored, so that these messages (annotation) can be used to
-     * learn a /new/ BCI from example data. Let's send the frame on a
-     * regular basis: */
-    if (frame % FPS == 0) {
-      printf("Sending an annotation...\n");
-      response = mp_post_annotation(&mp, user_id, stream_id, 
-        "game_loop_example", "tick");
-      /* TODO: what do we do with the response of the server? */
-      printf("Done.\n");
-     }
 
     /* We hate interrupting the game. So we poll for a response: */
     mp_update(&mp);
 
     /* Handle completed responses from the server. */
-    if (response) {
-      printf("We have a response!\n");
-      switch (response->status) {
-        case MP_RESP_READY:
-          printf("And it is ready...");
-          /* There is a complete response from the server. Lets extract a
-           * probability from the "random" detector: */
-          err = mp_read_detection(response, "random", &probability);
-          mp_response_destroy(response); /* Free slot for new requests. */
-          if (err) {
-            fprintf(stderr, "Could not decode message, code = %d!\n", err);
-            exit(-1);
-          }
+    switch (response->status) {
+      case MP_RESP_READY:
+        /* There is a complete response from the server. Lets extract a
+         * probability from the "random" detector: */
+        err = mp_read_detection(response, "random", &probability);
+        mp_response_destroy(response); /* Free slot for new requests. */
+        if (err) {
+          fprintf(stderr, "Could not decode message, code = %d!\n", err);
+          exit(-1);
+        }
 
-          if (probability > 0.80) {
-            printf("Detected random event with high confidence: p = %.2f.\n",
-                   probability);
-          }
-          break;
+        if (probability > 0.80) {
+          printf("Detected random event with high confidence: p = %.2f.\n",
+                 probability);
+        }
+        break;
 
-        case MP_RESP_INVALID:
-          printf("And it is invalid...");
-          fprintf(stderr, "Cleaning up invalid response.\n");
-          mp_response_destroy(response); /* Free slot for new requests. */
-          break;
-        
-        case MP_RESP_PENDING:
-          printf("and it is pending...\n");
+      case MP_RESP_INVALID:
+        printf("And it is invalid...");
+        fprintf(stderr, "Cleaning up invalid response.\n");
+        mp_response_destroy(response); /* Free slot for new requests. */
+        break;
 
-        default:
-          break;
-      }
+      default:
+        break;
     }
 
     printf("."); fflush(stdout);
