@@ -28,33 +28,34 @@ int main(void)
 
     /* Handle completed responses from the server. */
     switch (response->status) {
-      case MP_RESP_READY:
-        /* There is a complete response from the server. Lets extract a
-         * probability from the "random" detector: */
-        err = mp_read_detection(response, "random", &probability);
-        mp_response_destroy(response); /* Free slot for new requests. */
-        if (err) {
-          fprintf(stderr, "Could not decode message, code = %d!\n", err);
-          exit(-1);
-        }
+    case MP_RESP_READY:
+      /* There is a complete response from the server. Lets extract a
+       * probability from the "random" detector: */
+      err = mp_read_detection(response, "random", &probability);
+      mp_response_destroy(response); /* Free slot for new requests. */
+      if (err) {
+        fprintf(stderr, "Could not decode message, code = %d!\n", err);
+        exit(-1);
+      }
 
-        if (probability > 0.80) {
-          printf("Detected random event with high confidence: p = %.2f.\n",
-                 probability);
-        }
-        break;
+      if (probability > 0.80) {
+        printf("Detected random event with high confidence: p = %.2f.\n",
+               probability);
+      }
+      break;
 
-      case MP_RESP_INVALID:
-        printf("And it is invalid...");
-        fprintf(stderr, "Cleaning up invalid response.\n");
-        mp_response_destroy(response); /* Free slot for new requests. */
-        break;
+    case MP_RESP_INVALID:
+      printf("And it is invalid...");
+      fprintf(stderr, "Cleaning up invalid response.\n");
+      mp_response_destroy(response); /* Free slot for new requests. */
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
 
-    printf("."); fflush(stdout);
+    printf(".");
+    fflush(stdout);
     usleep(1e6/FPS);
   }
 

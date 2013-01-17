@@ -48,9 +48,9 @@ mp_response_t *do_request(mp_api_t *mp, const char *url)
 {
   mp_response_t *response;
   CURL *handle = curl_easy_init();
-  if (!handle) { 
+  if (!handle) {
     return NULL;
-  } 
+  }
 
   response = mp_response_init(mp, handle);
   if (response == NULL) {
@@ -69,18 +69,18 @@ mp_response_t *do_request(mp_api_t *mp, const char *url)
 }
 
 /* Request a detection for a user and stream ID. */
-mp_response_t *mp_get_detection(mp_api_t *mp, 
-  const char *user_id, const char *stream_id)
+mp_response_t *mp_get_detection(mp_api_t *mp,
+                                const char *user_id, const char *stream_id)
 {
   char url[MP_URLLEN];
-  snprintf(url, sizeof(url), 
-    "%s/u/%s/s/%s/detection", mp->api_url, user_id, stream_id);
+  snprintf(url, sizeof(url),
+           "%s/u/%s/s/%s/detection", mp->api_url, user_id, stream_id);
   return do_request(mp, url);
 }
 
-mp_response_t *mp_post_annotation(mp_api_t *mp, 
-  const char *user_id, const char *stream_id, 
-  const char *annotator, const char *text)
+mp_response_t *mp_post_annotation(mp_api_t *mp,
+                                  const char *user_id, const char *stream_id,
+                                  const char *annotator, const char *text)
 {
   char url[MP_URLLEN], *payload;
   CURL *handle = curl_easy_init();
@@ -92,27 +92,27 @@ mp_response_t *mp_post_annotation(mp_api_t *mp,
     return NULL;
   }
 
-  snprintf(url, sizeof(url), 
-    "%s/u/%s/s/%s/annotations", mp->api_url, user_id, stream_id);
+  snprintf(url, sizeof(url),
+           "%s/u/%s/s/%s/annotations", mp->api_url, user_id, stream_id);
 
   /* Fire an asynchronous HTTP request. */
   curl_easy_setopt(handle, CURLOPT_URL, url);
 
   /* Create payload. */
   {
-    json_t *J = json_pack("{s:s, s:s s:f s:f}", 
-      "annotator", annotator, 
-      "text", text,
-      "duration", 0.0,
-      "offset", 0.0);
+    json_t *J = json_pack("{s:s, s:s s:f s:f}",
+                          "annotator", annotator,
+                          "text", text,
+                          "duration", 0.0,
+                          "offset", 0.0);
     payload = json_dumps(J, JSON_INDENT(2));
     curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, payload);
     free(payload);
     json_decref(J);
   }
-  
 
- 
+
+
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, _curl_write_callback);
   curl_easy_setopt(handle, CURLOPT_WRITEDATA, response);
   curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, curl_error_buf);
@@ -120,7 +120,7 @@ mp_response_t *mp_post_annotation(mp_api_t *mp,
 
   /* Create HTTP header. */
   response->header_chunks = curl_slist_append(
-    response->header_chunks, "Content-Type: application/json");
+                              response->header_chunks, "Content-Type: application/json");
   curl_easy_setopt(handle, CURLOPT_HTTPHEADER, response->header_chunks);
 
   curl_multi_add_handle(mp->multi_handle, handle);
@@ -147,7 +147,7 @@ void mp_update(mp_api_t *mp)
       /* Find corresponding response: */
       response = NULL;
       for (int i = 0; i < MP_NREQ; ++i) {
-        if (mp->responses[i].status == MP_RESP_PENDING && 
+        if (mp->responses[i].status == MP_RESP_PENDING &&
             mp->responses[i].parent == msg->easy_handle) {
           response = &mp->responses[i];
           break;

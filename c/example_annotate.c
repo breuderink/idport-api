@@ -18,19 +18,19 @@ int main(void)
     mp_update(&mp);
 
     switch (response->status) {
-      case MP_RESP_READY:
-        /* There is a complete response from the server. Lets extract a
-         * probability from the "random" detector: */
-        printf("Done.\n");
-        mp_response_destroy(response); /* Free slot for new requests. */
-        exit(0);
+    case MP_RESP_READY:
+      /* There is a complete response from the server. Lets extract a
+       * probability from the "random" detector: */
+      printf("Done.\n");
+      mp_response_destroy(response); /* Free slot for new requests. */
+      exit(0);
 
-      case MP_RESP_INVALID:
-        mp_response_destroy(response); /* Free slot for new requests. */
-        exit(-1);
+    case MP_RESP_INVALID:
+      mp_response_destroy(response); /* Free slot for new requests. */
+      exit(-1);
 
-      default:
-        break;
+    default:
+      break;
     }
 
     usleep(1e6/100);
