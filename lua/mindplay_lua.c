@@ -8,14 +8,12 @@
 static int mindplay__init(lua_State *L)
 {
   const char *api_url = luaL_checkstring(L, 1);
-  const char *user_id= luaL_checkstring(L, 2);
-  const char *stream_id = luaL_checkstring(L, 3);
 
   mp_api_t *mp = lua_newuserdata(L, sizeof(mp_api_t));
   luaL_getmetatable(L, "mindplay.api");
   lua_setmetatable(L, -2);  /* -2 points to the new userdata. */
 
-  mp_init(mp, api_url, user_id, stream_id);
+  mp_init(mp, api_url);
 
   return 1;
 }
@@ -23,6 +21,8 @@ static int mindplay__init(lua_State *L)
 static int mindplay__request_detection(lua_State *L)
 {
   mp_api_t *mp = luaL_checkudata(L, 1, "mindplay.api");
+  const char *user_id= luaL_checkstring(L, 2);
+  const char *stream_id = luaL_checkstring(L, 3);
   mp_response_t **r;
   mp_response_t *response;
 
@@ -30,10 +30,10 @@ static int mindplay__request_detection(lua_State *L)
    * userdata into Lua. For this to work, the pointer has to remain
    * valid. Actually, it is not unlike regular C. */
 
-  response = mp_get_detection(mp);
+  response = mp_get_detection(mp, user_id, stream_id);
   lua_pushlightuserdata(L, response);
 
-  return 1;  /* return new request struct address. */
+  return 1;  /* Return new request struct's address. */
 }
 
 static int mindplay__update(lua_State *L)
@@ -58,7 +58,7 @@ static int mindplay__detection(lua_State *L)
   label = luaL_checkstring(L, 2);
 
   err = mp_read_detection(response, label, &p);
-  /* We could handle errors here. */
+  /* TODO: we could handle errors here. */
   lua_pushnumber(L, p);
 
   return 1;  /* return new float. */
@@ -68,10 +68,10 @@ static int mindplay__response_destroy(lua_State *L)
 {
   mp_response_t *response = NULL;
 
-  if (!lua_isuserdata(L, 2)) {
-    luaL_error(L, "Argument 2 is not a request!");
+  if (!lua_isuserdata(L, 1)) {
+    luaL_error(L, "Argument 1 is not a request!");
   }
-  response = lua_touserdata(L, 2);
+  response = lua_touserdata(L, 1);
 
   mp_response_destroy(response);
   return 0;

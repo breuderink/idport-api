@@ -1,3 +1,5 @@
+-- TODO: add error handling. 404 fill the queue and lead to segmentation
+-- error.
 mindplay = require 'mindplay'
 
 -- Add test for NaN's. Just using n~=n does not seem to cut it.
@@ -12,28 +14,33 @@ function sleep(secs)
 end
 
 FPS = 30
+user_id ='test_user'
+stream_id = '1'
+
 -- Initialize API:
-mp = mindplay.init('localhost:5000', 'test_user', '1')
+mp = mindplay.init('localhost:5000')
+responses = {}
 
 for i=0,10000 do
   print('Frame ' .. i .. '.');
+  print('In transerfer: ' .. #responses ..'.')
+
   -- Update transfers in progress:
-  if (i % math.floor(FPS/3)) == 0 then
+  if (i % math.floor(FPS/8)) == 0 then
     -- Perform (non-blocking) request for a detection:
     print('Requesting prediction...')
-    response = mindplay.request_detection(mp)
-    FIXME: FUCK, git fout.
+    table.insert(responses, mindplay.request_detection(mp, user_id, stream_id))
   end
   mindplay.update(mp)
 
   -- Try to read the probability from the response. If it is not yet
-  -- received, ready, we get a NaN.
-  if (response ~= nil) then
-    p = mindplay.detection(response, 'blink')
+  -- ready, we get a NaN.
+  for i, mp_response in ipairs(responses) do
+    p = mindplay.detection(mp_response, 'random')
     if not isnan(p) then 
-      print('Detected blink: '.. p) 
-      mindplay.response_destroy(response)
-      response = nil
+      print('Detected random event: '.. p) 
+      mindplay.response_destroy(mp_response)
+      table.remove(responses, i)
     end
   end
 
