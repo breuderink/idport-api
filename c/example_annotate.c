@@ -5,7 +5,6 @@ int main(void)
   mp_api_t mp;
   mp_response_t *response = NULL;
   const char *user_id = "test_user", *stream_id = "1";
-  int err;
 
   /* To start using MindPlay, we setup an API with with a server
    * address. */
@@ -34,7 +33,7 @@ int main(void)
         break;
     }
 
-    usleep(1e6/10);
+    usleep(1e6/100);
   }
 
   mp_destroy(&mp);

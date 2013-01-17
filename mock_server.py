@@ -25,7 +25,15 @@ def before_request():
 def get_detection(user_id, stream_id):
   time.sleep(.1)  # Simulate processing time.
   scores = {'random' : random.random()}
-  return flask.jsonify(detection=scores)
+  return flask.jsonify(detection=scores, user_id=user_id, stream_id=stream_id)
+
+
+@app.route('/u/<user_id>/s/<stream_id>/annotations', methods=['POST'])
+def post_annotation(user_id, stream_id):
+  if request.headers['Content-Type'] == 'application/json':
+    d = flask.json.loads(request.data)
+    app.logger.debug(d)
+  return flask.jsonify(status='OK')
 
 
 if __name__ == '__main__':
@@ -46,7 +54,7 @@ if __name__ == '__main__':
 #@app.route('/u/<user_id>/s/<stream_id>/samples', methods=['POST'])
 #def samples(user_id, stream_id):
 #  # Parse requested header:
-#  d = flask.json.loads(request.data)
+  #  d = flask.json.loads(request.data)
 #  try:
 #    t = float(d['local_start_time'])
 #    s = [string_to_float32(s) for s in d['samples']]
@@ -58,26 +66,3 @@ if __name__ == '__main__':
 #  return flask.jsonify(status='OK', nsamples=n)
 #
 #
-#@app.route('/u/<user_id>/s/<stream_id>/annotations', methods=['POST'])
-#def annotation(user_id, stream_id):
-#  d = flask.json.loads(request.data)
-#
-#  try:
-#    text = unicode(d['text'])
-#    lstart = float(d['local_start_time'])
-#    annotator = unicode(d.get('annotator', 'unspecified'))
-#    duration = float(d.get('duration', 0.))
-#    sstart = None
-#    if 'start_sample_number' in d:
-#      sstart = int(d['start_sample_number'])
-#  except:
-#    flask.abort(400)  # bad request
-#
-#  a = Annotation(text, annotator, lstart, duration, sstart)
-#  n = g.db.add_annotation(user_id, stream_id, a)
-#
-#  return flask.jsonify(status='OK', annotations=n)
-#
-#
-
-

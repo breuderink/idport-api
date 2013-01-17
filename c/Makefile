@@ -1,3 +1,4 @@
+# FIXME: dependencies are not always correctly recompiled.
 CFLAGS = -pedantic -std=c99
 LDFLAGS = -lcurl -ljansson
 
