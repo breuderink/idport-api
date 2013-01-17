@@ -25,37 +25,38 @@ void mp_init(mp_api_t *mp, const char *api_url)
 /* Find and initialize an unused request buffer from the pool. */
 static mp_response_t* mp_response_init(mp_api_t *mp, CURL *parent)
 {
+  mp_response_t *r = NULL;
   for (int i = 0; i < MP_NREQ; ++i) {
     if (mp->responses[i].status == MP_RESP_UNUSED) {
-      mp->responses[i].parent = parent;
-      mp->responses[i].size = 0;
-      memset(mp->responses[i].buffer, 0, MP_BUFSIZE);
-
-      mp->responses[i].status = MP_RESP_PENDING;
-      return &mp->responses[i];
+      /* We found one. Let's initialize. */
+      r = &mp->responses[i];
+      r->parent = parent;
+      r->header_chunks = NULL;
+      r->size = 0;
+      memset(r->buffer, 0, MP_BUFSIZE);
+      r->status = MP_RESP_PENDING;
+      break;
     }
   }
-  return NULL;  /* All buffers are in use. */
+
+  return r;
 }
 
 
-/* Request a detection for a user and stream ID. */
-mp_response_t *mp_get_detection(mp_api_t *mp, 
-  const char *user_id, const char *stream_id)
+/* Internal function for performing a curl request. */
+mp_response_t *do_request(mp_api_t *mp, const char *url)
 {
-  char url[MP_URLLEN];
-  CURL *handle = curl_easy_init();
   mp_response_t *response;
+  CURL *handle = curl_easy_init();
+  if (!handle) { 
+    return NULL;
+  } 
 
   response = mp_response_init(mp, handle);
   if (response == NULL) {
     fprintf(stderr, "No free response slots available!\n");
     return NULL;
   }
-
-  /* Configure the API URL. */
-  snprintf(url, sizeof(url), 
-    "%s/u/%s/s/%s/detection", mp->api_url, user_id, stream_id);
 
   /* Fire an asynchronous HTTP request. */
   curl_easy_setopt(handle, CURLOPT_URL, url);
@@ -66,6 +67,56 @@ mp_response_t *mp_get_detection(mp_api_t *mp,
 
   return response;
 }
+
+/* Request a detection for a user and stream ID. */
+mp_response_t *mp_get_detection(mp_api_t *mp, 
+  const char *user_id, const char *stream_id)
+{
+  char url[MP_URLLEN];
+  snprintf(url, sizeof(url), 
+    "%s/u/%s/s/%s/detection", mp->api_url, user_id, stream_id);
+  return do_request(mp, url);
+}
+
+mp_response_t *mp_post_annotation(mp_api_t *mp, 
+  const char *user_id, const char *stream_id, 
+  const char *annotator, const char *message)
+{
+  char url[MP_URLLEN];
+  CURL *handle = curl_easy_init();
+  mp_response_t *response;
+  
+  snprintf(url, sizeof(url), 
+    "%s/u/%s/s/%s/annotations", mp->api_url, user_id, stream_id);
+
+  response = mp_response_init(mp, handle);
+  if (response == NULL) {
+    fprintf(stderr, "No free response slots available!\n");
+    return NULL;
+  }
+
+  /* Fire an asynchronous HTTP request. */
+  curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(handle, CURLOPT_URL, url);
+  curl_easy_setopt(handle, CURLOPT_POSTFIELDS, "BLADIEBLA");
+ 
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, _curl_write_callback);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, response);
+  curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, curl_error_buf);
+
+
+  /* Create HTTP header. */
+  response->header_chunks = curl_slist_append(
+    response->header_chunks, "Content-Type: text/plain");
+  curl_easy_setopt(handle, CURLOPT_HTTPHEADER, response->header_chunks);
+
+  curl_multi_add_handle(mp->multi_handle, handle);
+
+
+  return response;
+}
+
+
 
 /* Update asynchronous transfers. */
 void mp_update(mp_api_t *mp)
@@ -180,4 +231,5 @@ void mp_destroy(mp_api_t *mp)
 void mp_response_destroy(mp_response_t *response)
 {
   response->status = MP_RESP_UNUSED;
+  curl_slist_free_all(response->header_chunks);
 }

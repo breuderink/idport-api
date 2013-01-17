@@ -19,6 +19,7 @@ typedef struct {
   enum {MP_RESP_UNUSED, MP_RESP_PENDING, MP_RESP_READY, MP_RESP_INVALID} 
     status;
   CURL *parent; /* Used to link response and handle after transfer. */
+  struct curl_slist *header_chunks; /* Used for HTTP request header. */
 } mp_response_t;
 
 
