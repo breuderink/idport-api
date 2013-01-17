@@ -15,18 +15,19 @@ int main(void)
 
   for(int frame=0;; ++frame) {
     if (frame % (FPS / 4) == 0) {
-      /* Four times a second, we request a detection from the server: */
+      /* Four times a second, we request a detection from the server.
+       * For simplicity, we don't have a queue for transfers in
+       * progress, but that probably is a good idea. */
       response = mp_get_detection(&mp);
     }
 
     /* We hate interrupting the game. So we poll for a response: */
     mp_update(&mp);
 
-    /* TODO: loop over response list. In API? */
     if (response->status == MP_RESP_READY) {
       /* There is a complete response from the server. Lets extract a
-       * probability from the "left hand" detector: */
-      err = mp_read_detection(response, "left hand", &probability);
+       * probability from the "random" detector: */
+      err = mp_read_detection(response, "random", &probability);
       mp_response_destroy(response); /* Free slot for new requests. */
       if (err) {
         fprintf(stderr, "Could not decode message, code = %d!\n", err);
@@ -34,7 +35,7 @@ int main(void)
       }
 
       if (probability > 0.80) {
-        printf("Detected imagined movement with high confidence: p = %.2f.\n",
+        printf("Detected random event with high confidence: p = %.2f.\n",
                probability);
       }
     }
