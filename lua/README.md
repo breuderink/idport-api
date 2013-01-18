@@ -1,4 +1,3 @@
-# TODO
-- Add error handling (404 fill the queue and lead to a segfault).
-- Add annotation support.
-- Integrate into Pax Brittanica.
+This directory contains a Lua binding for the IDPort API. First compile
+the C API, then build 'lua_runner'. This program then executes
+'main.lua' on invocation.
