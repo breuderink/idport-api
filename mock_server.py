@@ -25,8 +25,8 @@ def post_annotation(user_id, stream_id):
     d = flask.json.loads(request.data)
     app.logger.debug(d)
     return flask.jsonify(status='OK')
-  return flask.jsonify(status='Error!')
+  flask.abort(406)  # not acceptable
 
 
 if __name__ == '__main__':
-  app.run()
+  app.run(debug=True)
