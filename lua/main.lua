@@ -1,9 +1,11 @@
+-- Please note that I have only a few hours of experience with Lua. So,
+-- my code is probably sub-optimal and not idiomatic Lua. Sorry.
 mindplay = require 'mindplay'
 
--- Add test for NaN's. Just using n~=n does not seem to cut it.
+-- Add some helper functions that Lua seems to be missing. --
 function isnan(n) return tostring(n) == tostring(0/0) end
 
--- Lua doesn't have a native sleep :/.
+-- Lua doesn't have a native sleep?
 function sleep(secs)
   t = os.clock() + secs
   while(os.clock() < t) do
@@ -11,27 +13,29 @@ function sleep(secs)
   end
 end
 
-FPS = 30
-user_id ='test_user'
-stream_id = 'test_stream'
-
--- Initialize API:
-mp = mindplay.init('localhost:5000')
-detections = {}
-annotations = {}
-
 --
-READY = 2
-INVALID = 3
-function cleanup_transfers(list)
+local RESPONSE_READY = 2
+local RESPONSE_INVALID = 3
+local FPS = 30
+local user_id ='test_user'
+local stream_id = 'test_stream'
+
+
+
+local function cleanup_transfers(list)
   for i, r in ipairs(list) do
     s = mindplay.response_status(r)
-    if (s == 2) or (s == 3) then
+    if (s == RESPONSE_READY) or (s == RESPONSE_INVALID) then
       mindplay.response_destroy(r)
       table.remove(list, i)
     end
   end
 end
+
+-- Initialize API:
+local mp = mindplay.init('localhost:5000')
+local detections = {}
+local annotations = {}
 
 -- Start main event loop.
 for i=0,10000 do
@@ -55,7 +59,7 @@ for i=0,10000 do
 
   -- Loop over and handle responses:
   for i, r in ipairs(detections) do
-    if mindplay.response_status(r) == READY then
+    if mindplay.response_status(r) == RESPONSE_READY then
       p = mindplay.detection(r, 'random')
       print('p = ' .. p)
     end
@@ -67,4 +71,5 @@ for i=0,10000 do
   sleep(1/FPS)
 end
 
+-- Cleanup again.
 mindplay.destroy(mp)
