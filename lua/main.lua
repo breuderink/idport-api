@@ -11,7 +11,7 @@ function sleep(secs)
   end
 end
 
--- Define some MindPlay related functions.
+-- Define some IDport related functions.
 local RESPONSE_READY = 2
 local RESPONSE_INVALID = 3
 
@@ -26,7 +26,7 @@ local function cleanup_transfers(list)
 end
 
 -- Initialize API and setup bookkeeping.
-local mp = idport.init('localhost:5000')
+local idp = idport.init('localhost:5000')
 
 local user_id ='test_user'
 local stream_id = 'test_stream'
@@ -43,22 +43,22 @@ while true do
   -- Regularly request a new prediction from the server. --
   if (frame % math.floor(FPS/8)) == 0 then
     -- Perform (non-blocking) request for a detection:
-    r = idport.request_detection(mp, user_id, stream_id)
+    r = idport.request_detection(idp, user_id, stream_id)
     if r then table.insert(detections, r) end
   end
 
   if frame % 100 == 0 then
     -- Send annotation.
-    r = idport.annotate(mp, user_id, stream_id, 'lua_example', 'Hi!')
+    r = idport.annotate(idp, user_id, stream_id, 'lua_example', 'Hi!')
     if r then table.insert(annotations, r) end
   end
 
   -- Update asynchronous transfers in progress:
-  idport.update(mp)
+  idport.update(idp)
 
   -- Loop over and handle responses:
   for i, r in ipairs(detections) do
-    if idport.response_status(r) == RESPONSE_READY then
+    if idport.response_status(r) == response_ready then
       print('p = ' .. string.format('%.2f', idport.detection(r, 'random')))
     end
   end
@@ -70,4 +70,4 @@ while true do
 end
 
 -- Cleanup API.
-idport.destroy(mp)
+idport.destroy(idp)
