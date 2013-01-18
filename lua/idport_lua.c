@@ -2,7 +2,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
-#include "mindplay.h"
+#include "idport.h"
 
 
 static int mindplay__init(lua_State *L)

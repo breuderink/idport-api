@@ -1,4 +1,4 @@
-#include "mindplay.h"
+#include "idport.h"
 #define FPS 30
 
 int main(void)
