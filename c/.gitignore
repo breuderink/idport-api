@@ -2,4 +2,4 @@
 *.o
 example_game_loop
 example_annotate
-libmindplay.a
+libidport.a

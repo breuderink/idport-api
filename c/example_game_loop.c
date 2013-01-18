@@ -3,15 +3,15 @@
 
 int main(void)
 {
-  mp_api_t mp;
-  mp_response_t *response = NULL;
+  idp_api_t mp;
+  idp_response_t *response = NULL;
   const char *user_id = "test_user", *stream_id = "1";
   float probability;
   int err;
 
-  /* To start using MindPlay, we setup an API with with a server
+  /* To start using IDport, we setup an API with with a server
    * address. */
-  mp_init(&mp, "http://localhost:5000");
+  idp_init(&mp, "http://localhost:5000");
 
 
   /* Start the game loop. */
@@ -20,19 +20,19 @@ int main(void)
      * For simplicity, we don't have a queue for transfers in
      * progress, but that probably is a good idea. */
     if (frame % (FPS / 4) == 0) {
-      response = mp_get_detection(&mp, user_id, stream_id);
+      response = idp_get_detection(&mp, user_id, stream_id);
     }
 
     /* We hate interrupting the game. So we poll for a response: */
-    mp_update(&mp);
+    idp_update(&mp);
 
     /* Handle completed responses from the server. */
     switch (response->status) {
-    case MP_RESP_READY:
+    case IDP_RESP_READY:
       /* There is a complete response from the server. Lets extract a
        * probability from the "random" detector: */
-      err = mp_read_detection(response, "random", &probability);
-      mp_response_destroy(response); /* Free slot for new requests. */
+      err = idp_read_detection(response, "random", &probability);
+      idp_response_destroy(response); /* Free slot for new requests. */
       if (err) {
         fprintf(stderr, "Could not decode message, code = %d!\n", err);
         exit(-1);
@@ -44,10 +44,10 @@ int main(void)
       }
       break;
 
-    case MP_RESP_INVALID:
+    case IDP_RESP_INVALID:
       printf("And it is invalid...");
       fprintf(stderr, "Cleaning up invalid response.\n");
-      mp_response_destroy(response); /* Free slot for new requests. */
+      idp_response_destroy(response); /* Free slot for new requests. */
       break;
 
     default:
@@ -59,6 +59,6 @@ int main(void)
     usleep(1e6/FPS);
   }
 
-  mp_destroy(&mp);
+  idp_destroy(&mp);
   return 0;
 }

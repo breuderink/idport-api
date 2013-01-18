@@ -18,7 +18,7 @@ int main (void)
   /* <MAGIC> */
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
-  REGISTER_LOADER("mindplay", luaopen_mindplay);
+  REGISTER_LOADER("idport", luaopen_idport);
   lua_pop(L, 2);
   /* </MAGIC> */
 
