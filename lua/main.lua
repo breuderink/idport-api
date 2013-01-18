@@ -58,7 +58,7 @@ while true do
 
   -- Loop over and handle responses:
   for i, r in ipairs(detections) do
-    if idport.response_status(r) == response_ready then
+    if idport.response_status(r) == RESPONSE_READY then
       print('p = ' .. string.format('%.2f', idport.detection(r, 'random')))
     end
   end

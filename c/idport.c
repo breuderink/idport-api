@@ -80,7 +80,8 @@ idp_response_t *idp_get_detection(idp_api_t *idp,
 
 idp_response_t *idp_post_annotation(idp_api_t *idp,
                                   const char *user_id, const char *stream_id,
-                                  const char *annotator, const char *text)
+                                  const char *annotator, const char *text,
+                                  const double offset, const double duration)
 {
   char url[IDP_URLLEN], *payload;
   CURL *handle = curl_easy_init();
@@ -100,11 +101,15 @@ idp_response_t *idp_post_annotation(idp_api_t *idp,
 
   /* Create payload. */
   {
-    json_t *J = json_pack("{s:s, s:s s:f s:f}",
+    struct timeval t;
+    gettimeofday(&t, NULL);
+
+    json_t *J = json_pack("{s:s, s:s s:f s:f s:f}",
                           "annotator", annotator,
                           "text", text,
-                          "duration", 0.0,
-                          "offset", 0.0);
+                          "local_time", (double) t.tv_sec + 1e-6 * t.tv_usec,
+                          "offset", offset,
+                          "duration", duration);
     payload = json_dumps(J, JSON_INDENT(2));
     curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, payload);
     free(payload);

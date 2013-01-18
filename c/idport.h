@@ -44,7 +44,8 @@ idp_response_t *idp_post_samples(idp_api_t *mp,
   const char *user_id, const char *stream_id);
 idp_response_t *idp_post_annotation(idp_api_t *mp, 
   const char *user_id, const char *stream_id, 
-  const char *annotator, const char *message);
+  const char *annotator, const char *message, const double offset, const
+  double duration);
 
 /* Perform asynchronous communication. */
 void idp_update(idp_api_t *mp);

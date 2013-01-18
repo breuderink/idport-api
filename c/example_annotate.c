@@ -11,7 +11,8 @@ int main(void)
   idp_init(&mp, "http://localhost:5000");
 
   printf("Sending an annotation...\n");
-  response = idp_post_annotation(&mp, user_id, stream_id, "me", "Tick.");
+  response = idp_post_annotation(&mp, user_id, stream_id, 
+    "me", "Tick.", -1, 10);
 
   while (1) {
     /* We hate interrupting the game. So we poll for a response: */

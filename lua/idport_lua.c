@@ -71,6 +71,8 @@ static int idport__detection(lua_State *L)
 
 static int idport__annotate(lua_State *L)
 {
+  /* TODO: use a table instead of positional arguments, and implement
+   * handling of the offset and duration attributes. */
   idp_api_t *idp = luaL_checkudata(L, 1, "idport.api");
   const char *user_id = luaL_checkstring(L, 2);
   const char *stream_id = luaL_checkstring(L, 3);
@@ -78,7 +80,8 @@ static int idport__annotate(lua_State *L)
   const char *text = luaL_checkstring(L, 5);
   idp_response_t *response;
 
-  response = idp_post_annotation(idp, user_id, stream_id, annotator, text);
+  response = idp_post_annotation(idp, user_id, stream_id, annotator,
+    text, 0, 0);
   if (response) {
     lua_pushlightuserdata(L, response);
     return 1;
