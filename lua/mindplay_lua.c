@@ -18,12 +18,12 @@ static int mindplay__init(lua_State *L)
   return 1;
 }
 
+
 static int mindplay__request_detection(lua_State *L)
 {
   mp_api_t *mp = luaL_checkudata(L, 1, "mindplay.api");
   const char *user_id= luaL_checkstring(L, 2);
   const char *stream_id = luaL_checkstring(L, 3);
-  mp_response_t **r;
   mp_response_t *response;
 
   /* We are going to do something dangerous; we push a pointer as
@@ -64,6 +64,36 @@ static int mindplay__detection(lua_State *L)
   return 1;  /* return new float. */
 }
 
+
+static int mindplay__annotate(lua_State *L)
+{
+  mp_api_t *mp = luaL_checkudata(L, 1, "mindplay.api");
+  const char *user_id = luaL_checkstring(L, 2);
+  const char *stream_id = luaL_checkstring(L, 3);
+  const char *annotator = luaL_checkstring(L, 4);
+  const char *text = luaL_checkstring(L, 5);
+  mp_response_t *response;
+
+  response = mp_post_annotation(mp, user_id, stream_id, annotator, text);
+  lua_pushlightuserdata(L, response);
+
+  return 1;
+}
+
+
+static int mindplay__response_status(lua_State *L)
+{
+  mp_response_t *response = NULL;
+
+  if (!lua_isuserdata(L, 1)) {
+    luaL_error(L, "Argument 1 is not a request!");
+  }
+  response = lua_touserdata(L, 1);
+  lua_pushnumber(L, response->status);
+
+  return 1;
+}
+
 static int mindplay__response_destroy(lua_State *L)
 {
   mp_response_t *response = NULL;
@@ -76,6 +106,7 @@ static int mindplay__response_destroy(lua_State *L)
   mp_response_destroy(response);
   return 0;
 }
+
 
 static int mindplay__destroy(lua_State *L)
 {
@@ -90,6 +121,8 @@ static const luaL_reg mindplay[] = {
   { "init", mindplay__init },
   { "update", mindplay__update },
   { "request_detection", mindplay__request_detection },
+  { "annotate", mindplay__annotate },
+  { "response_status", mindplay__response_status },
   { "response_destroy", mindplay__response_destroy },
   { "destroy", mindplay__destroy },
   { "detection", mindplay__detection },
@@ -103,4 +136,3 @@ LUALIB_API int luaopen_mindplay(lua_State *L)
   luaL_register(L, "mindplay", mindplay);
   return 1;
 }
-
