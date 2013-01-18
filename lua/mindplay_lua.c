@@ -31,10 +31,13 @@ static int mindplay__request_detection(lua_State *L)
    * valid. Actually, it is not unlike regular C. */
 
   response = mp_get_detection(mp, user_id, stream_id);
-  lua_pushlightuserdata(L, response);
-
-  return 1;  /* Return new request struct's address. */
+  if (response) {
+    lua_pushlightuserdata(L, response);
+    return 1;
+  }
+  return 0;
 }
+
 
 static int mindplay__update(lua_State *L)
 {
@@ -42,6 +45,7 @@ static int mindplay__update(lua_State *L)
   mp_update(mp);
   return 0;
 }
+
 
 static int mindplay__detection(lua_State *L)
 {
@@ -75,9 +79,11 @@ static int mindplay__annotate(lua_State *L)
   mp_response_t *response;
 
   response = mp_post_annotation(mp, user_id, stream_id, annotator, text);
-  lua_pushlightuserdata(L, response);
-
-  return 1;
+  if (response) {
+    lua_pushlightuserdata(L, response);
+    return 1;
+  }
+  return 0;
 }
 
 

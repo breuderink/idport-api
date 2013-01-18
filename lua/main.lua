@@ -21,7 +21,6 @@ local user_id ='test_user'
 local stream_id = 'test_stream'
 
 
-
 local function cleanup_transfers(list)
   for i, r in ipairs(list) do
     s = mindplay.response_status(r)
@@ -45,13 +44,22 @@ for i=0,10000 do
   -- Regularly request a new prediction from the server:
   if (i % math.floor(FPS/8)) == 0 then
     -- Perform (non-blocking) request for a detection:
-    table.insert(detections, mindplay.request_detection(mp, user_id, stream_id))
+    r = mindplay.request_detection(mp, user_id, stream_id)
+    if r then
+      table.insert(detections, r)
+    else
+      print('Cannot perform request!')
+    end
   end
   if i % 20 == 0 then
     -- Send annotation with the current frame.
     msg = 'frame ' .. i
-    table.insert(annotations, mindplay.annotate(mp, 
-      user_id, stream_id, 'lua_example', msg))
+    r = mindplay.annotate(mp, user_id, stream_id, 'lua_example', msg)
+    if r then
+      table.insert(annotations, r)
+    else
+      print('Cannot perform request!')
+    end
   end
 
   -- Update asynchronous transfers in progress:
@@ -59,6 +67,7 @@ for i=0,10000 do
 
   -- Loop over and handle responses:
   for i, r in ipairs(detections) do
+    print(r)
     if mindplay.response_status(r) == RESPONSE_READY then
       p = mindplay.detection(r, 'random')
       print('p = ' .. p)
