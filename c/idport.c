@@ -103,6 +103,8 @@ idp_response_t *idp_post_annotation(idp_api_t *idp,
   {
     struct timeval t;
     gettimeofday(&t, NULL);
+    /* Note that this time is not necessarily monotonously increasing.
+     * This is a very difficult subjects. */
 
     json_t *J = json_pack("{s:s, s:s s:f s:f s:f}",
                           "annotator", annotator,
