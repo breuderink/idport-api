@@ -32,10 +32,10 @@ int main(void)
     /* If we have received  a completed responses from the server, we
      * can use the detected brain state. Here we use a fake detector
      * that gives random result for testing purposes. */
-    switch (response->status) {
-    case IDP_RESP_READY:
+    if (response->status == IDP_RESP_READY) {
       err = idp_read_detection(response, "random", &probability);
       idp_response_destroy(response); /* Free slot for new requests. */
+
       if (err) {
         fprintf(stderr, "Could not decode message, code = %d!\n", err);
         exit(-1);
@@ -45,15 +45,10 @@ int main(void)
         printf("Detected random event with high confidence: p = %.2f.\n",
                probability);
       }
-      break;
-
-    case IDP_RESP_INVALID:
-      fprintf(stderr, "Cleaning up invalid response.\n");
+    }
+    if (response->status == IDP_RESP_INVALID) {
+      fprintf(stderr, "Received up invalid response.\n");
       idp_response_destroy(response); /* Free slot for new requests. */
-      break;
-
-    default:
-      break;
     }
 
     printf("."); fflush(stdout); /* Show smooth progress. */
