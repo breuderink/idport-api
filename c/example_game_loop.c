@@ -9,28 +9,31 @@ int main(void)
   float probability;
   int err;
 
-  /* To start using IDport, we setup an API with with a server
-   * address. */
+  /* To start using IDport, we setup an API with with a brain-computer
+   * interface server address. */
   idp_init(&mp, "http://localhost:5000");
 
 
   /* Start the game loop. */
   for(int frame=0;; ++frame) {
-    /* Four times a second, we request a detection from the server.
-     * For simplicity, we don't have a queue for transfers in
-     * progress, but that probably is a good idea. */
+    /* Four times a second, we request the server to detect important
+     * patterns in the incoming EEG data. To keep this example simple,
+     * we don't keep a list with with parallel transfers --- which we
+     * recommended for a real game in order to reliably support frequent
+     * (> 8 Hz) update rates. */
     if (frame % (FPS / 4) == 0) {
       response = idp_get_detection(&mp, user_id, stream_id);
     }
 
-    /* We hate interrupting the game. So we poll for a response: */
+    /* We hate interrupting your the game. So we update our active
+     * requests, without stalling the game: */
     idp_update(&mp);
 
-    /* Handle completed responses from the server. */
+    /* If we have received  a completed responses from the server, we
+     * can use the detected brain state. Here we use a fake detector
+     * that gives random result for testing purposes. */
     switch (response->status) {
     case IDP_RESP_READY:
-      /* There is a complete response from the server. Lets extract a
-       * probability from the "random" detector: */
       err = idp_read_detection(response, "random", &probability);
       idp_response_destroy(response); /* Free slot for new requests. */
       if (err) {
@@ -45,7 +48,6 @@ int main(void)
       break;
 
     case IDP_RESP_INVALID:
-      printf("And it is invalid...");
       fprintf(stderr, "Cleaning up invalid response.\n");
       idp_response_destroy(response); /* Free slot for new requests. */
       break;
@@ -54,8 +56,7 @@ int main(void)
       break;
     }
 
-    printf(".");
-    fflush(stdout);
+    printf("."); fflush(stdout); /* Show smooth progress. */
     usleep(1e6/FPS);
   }
 
