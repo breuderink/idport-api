@@ -19,6 +19,13 @@ def stream(user_id):
   return flask.jsonify(stream_id='test-stream')
 
 
+@app.route('/u/<user_id>/s/<stream_id>/samples', methods=['POST'])
+def samples(user_id, stream_id):
+  d = flask.json.loads(request.data)
+  app.logger.debug(d)
+  return flask.jsonify(status='OK')
+
+
 @app.route('/u/<user_id>/s/<stream_id>/detection')
 def get_detection(user_id, stream_id):
   time.sleep(.1)  # Simulate processing time.

@@ -8,14 +8,15 @@ log = logging.getLogger(__name__)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Stream EEG to IDport')
-  parser.add_argument('--hardware_id', default='unknown',
+  parser.add_argument('--hardware-id', default='unknown',
     help='Identifier of the hardware setup.')
   parser.add_argument('--chunk-size', default=16, type=int,
     help='Number of samples to read and send at once.')
   parser.add_argument('--idport-url', default='http://localhost:5000',
-    help='URL of IDport REST API')
+    help='URL of IDport REST API.')
   parser.add_argument('--user-id', default='test-user')
   parser.add_argument('--stream-id', default='test-stream')
+  parser.add_argument('--sample_rate', type=float, default=128.)
   parser.add_argument('--verbose', '-v', action='store_true')
 
   args = parser.parse_args()
@@ -27,8 +28,27 @@ if __name__ == '__main__':
   np.set_printoptions(precision=2)
 
   # Setup stream.  
-  labels = ['%.2f Hz' % freq for freq in range(4)]
+  freqs = np.arange(4)
+  labels = ['%.2f Hz sine' % freq for freq in freqs]
+  stream_id = idport.post_stream(args.idport_url, args.user_id, labels, 
+    args.sample_rate, args.hardware_id)
+  log.info('Created stream %s.', stream_id)
 
-  stream_id = idport.post_stream(args.idport_url, args.user_id, labels, 128, 
-    args.hardware_id)
-  print stream_id
+  # Start streaming sine waves.
+  i = 0
+  duration = args.chunk_size / args.sample_rate
+  while True:
+    next_t = time.time() + duration
+
+    # Create new samples.
+    C = i + np.hstack([np.arange(args.chunk_size).reshape(-1, 1)] * len(freqs))
+    print C
+    T = C / args.sample_rate
+    S = np.sin(T * freqs)
+
+    # Post samples to server.
+    idport.post_samples(args.idport_url, args.user_id, stream_id, S)
+    
+    # Update sample count and wait appropriate time.
+    i += args.chunk_size
+    time.sleep(max(0, next_t - time.time()))
