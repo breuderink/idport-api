@@ -18,9 +18,9 @@ def post_stream(url, user_id, sensor_labels, sample_rate,
     An identifier for the newly created stream.
   '''
   config = dict(  
-    sensor_labels=sensor_labels, 
-    sample_rate=sample_rate,
-    hardware_id=hardware_id)
+    sensor_labels=[str(l) for l in sensor_labels], 
+    sample_rate=float(sample_rate),
+    hardware_id=str(hardware_id))
   r = requests.post('%(url)s/u/%(user_id)s/s' % 
     dict(url=url, user_id=user_id), data=json.dumps(config))
 
