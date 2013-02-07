@@ -24,11 +24,11 @@ def post_header(url, user_id, sensor_labels, sample_rate, hardware_id):
     dict(url=url, user=user_id), data=json.dumps(config))
 
   r.raise_for_status()  # Raise exception on error.
-  return  r.json['stream_id']
+  return r.json['stream_id']
 
 
 def get_header(url, user_id, stream_id):
-  raise NotImplementedErrror
+  raise NotImplementedError
 
 
 def post_samples(url, user_id, stream_id, samp):
@@ -39,12 +39,15 @@ def post_samples(url, user_id, stream_id, samp):
 
 
 def get_samples(url, user_id, stream_id):
-  raise NotImplementedErrror
+  raise NotImplementedError
 
 
 def get_annotation(url, user_id, stream_id):
-  raise NotImplementedErrror
+  raise NotImplementedError
 
 
 def get_detection(url, user_id, stream_id):
-  raise NotImplementedErrror
+  r = requests.get('%(url)s/u/%(user_id)s/s/%(stream_id)s/detection' % 
+    dict(url=url, user_id=user_id, stream_id=stream_id))
+  r.raise_for_status()  # Raise exception on error.
+  return r.json()['detection']
