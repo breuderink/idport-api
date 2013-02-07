@@ -1,4 +1,4 @@
-import logging, argparse, json
+import logging, argparse, json, time
 import numpy as np
 import requests
 
@@ -35,7 +35,8 @@ def get_stream(url, user_id, stream_id):
 def post_samples(url, user_id, stream_id, samp):
   payload = serialize.serialize_samples(samp, time.time())
   log.debug(payload)
-  r = requests.post(url, data=payload)
+  r = requests.post('%s/u/%s/s/%s/samples' % (url, user_id, stream_id),
+    data=payload)
   r.raise_for_status()  # Raise exception on error.
 
 
