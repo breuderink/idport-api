@@ -21,9 +21,7 @@ def post_stream(url, user_id, sensor_labels, sample_rate,
     sensor_labels=[str(l) for l in sensor_labels], 
     sample_rate=float(sample_rate),
     hardware_id=str(hardware_id))
-  r = requests.post('%(url)s/u/%(user_id)s/s' % 
-    dict(url=url, user_id=user_id), data=json.dumps(config))
-
+  r = requests.post('%s/u/%s/s' % (url, user_id), data=json.dumps(config))
   r.raise_for_status()  # Raise exception on error.
   return r.json()['stream_id']
 

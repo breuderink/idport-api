@@ -21,7 +21,7 @@ def test_post_stream():
     mock_post.assert_called_with('http://example.com/u/test-user/s', 
       data='{"hardware_id": "test_hw", "sample_rate": 64.0, ' +
         '"sensor_labels": ["a", "b", "c"]}')
-    # Test that errors are raised.
+    # Check that errors are raised.
     mock_r.raise_for_status.assert_called_with()
 
     assert stream_id == 'test_stream'
