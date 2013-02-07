@@ -2,6 +2,8 @@ import logging, argparse, json
 import numpy as np
 import requests
 
+import serialize
+
 log = logging.getLogger(__name__)
 
 
@@ -16,23 +18,8 @@ def post_header(url, user, sensor_labels, sample_rate, hardware_id):
   return d['stream_id']
 
 
-def serialize_singles(sample):
-  '''Convert a single single precision sample to a JSON compatible string.'''
-  return np.asarray(sample).astype('<f4').tostring().encode('base64')
-
-
-def deserialize_singles(string):
-  return np.fromstring(string.decode('base64'), '<f4')
-
-
-def serialize_samples(samples, local_time):
-  return json.dumps(dict(
-    samples=[serialize_singles(s) for s in samples],
-    local_time=local_time))
-
-
 def post_samples(url, stream_id, samp):
-  payload = serialize_samples(samp, time.time())
+  payload = serialize.serialize_samples(samp, time.time())
   log.debug(payload)
   r = requests.post(url, data=payload)
   r.raise_for_status()  # Raise exception on error.

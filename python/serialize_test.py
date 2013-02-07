@@ -1,6 +1,6 @@
 import json, time
 import numpy as np
-import idport_samples
+import serialize
 
 
 def test_serialize_samples():
@@ -10,7 +10,7 @@ def test_serialize_samples():
   S = np.arange(n * p).reshape(n, -1).astype(np.float32) * .1
   print S
 
-  r = idport_samples.serialize_samples(S, ltime)
+  r = serialize.serialize_samples(S, ltime)
   print r
   d = json.loads(r)
 
@@ -21,7 +21,7 @@ def test_serialize_samples():
   # Check that samples can be transformed back.
   for si, samp in enumerate(d['samples']):
     np.testing.assert_allclose(
-      idport_samples.deserialize_singles(samp[:-1]),
+      serialize.deserialize_singles(samp[:-1]),
       S[si])
 
   

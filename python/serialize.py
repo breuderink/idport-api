@@ -1,9 +1,16 @@
+import json
 import numpy as np
 
-def float32_to_string(a):
-  a = np.asarray(a)
-  return a.astype('<f4').tostring()
+def serialize_singles(sample):
+  '''Convert a single single precision sample to a JSON compatible string.'''
+  return np.asarray(sample).astype('<f4').tostring().encode('base64')
 
 
-def string_to_float32(s):
-  return np.fromstring(s, '<f4')
+def deserialize_singles(string):
+  return np.fromstring(string.decode('base64'), '<f4')
+
+
+def serialize_samples(samples, local_time):
+  return json.dumps(dict(
+    samples=[serialize_singles(s) for s in samples],
+    local_time=local_time))
