@@ -30,9 +30,11 @@ def get_stream(url, user_id, stream_id):
   raise NotImplementedError
 
 
-def post_samples(url, user_id, stream_id, samp):
-  payload = serialize.serialize_samples(samp, time.time())
-  log.debug(payload)
+def post_samples(url, user_id, stream_id, samp, local_time=None):
+  if not local_time:
+    local_time = time.time()
+
+  payload = serialize.serialize_samples(samp, local_time)
   r = requests.post('%s/u/%s/s/%s/samples' % (url, user_id, stream_id),
     data=payload)
   r.raise_for_status()  # Raise exception on error.
