@@ -25,7 +25,6 @@ def test_post_stream(mock_post):
 
   # Check that errors are raised.
   mock_r.raise_for_status.assert_called_with()
-
   assert stream_id == 'test_stream'
 
 

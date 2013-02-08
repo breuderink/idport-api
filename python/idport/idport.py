@@ -7,8 +7,7 @@ import serialize
 log = logging.getLogger(__name__)
 
 
-def post_stream(url, user_id, sensor_labels, sample_rate, 
-  hardware_id='unknown'):
+def post_stream(url, user_id, sensor_labels, sample_rate, hardware_id):
   '''
   Create a new stream by posting header information for the stream.
 
@@ -17,11 +16,9 @@ def post_stream(url, user_id, sensor_labels, sample_rate,
   stream_id : str
     An identifier for the newly created stream.
   '''
-  config = dict(  
-    sensor_labels=[str(l) for l in sensor_labels], 
-    sample_rate=float(sample_rate),
-    hardware_id=str(hardware_id))
-  r = requests.post('%s/u/%s/s' % (url, user_id), data=json.dumps(config))
+  payload = serialize.serialize_stream_config(
+    sensor_labels, sample_rate, hardware_id)
+  r = requests.post('%s/u/%s/s' % (url, user_id), data=payload)
   r.raise_for_status()  # Raise exception on error.
   return r.json()['stream_id']
 
@@ -30,10 +27,7 @@ def get_stream(url, user_id, stream_id):
   raise NotImplementedError
 
 
-def post_samples(url, user_id, stream_id, samp, local_time=None):
-  if not local_time:
-    local_time = time.time()
-
+def post_samples(url, user_id, stream_id, samp, local_time):
   payload = serialize.serialize_samples(samp, local_time)
   r = requests.post('%s/u/%s/s/%s/samples' % (url, user_id, stream_id),
     data=payload)

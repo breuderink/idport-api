@@ -1,6 +1,24 @@
 import json
 import numpy as np
 
+
+def serialize_stream_config(sensor_labels, sample_rate, hardware_id):
+  '''Encode streaming configuration in JSON.'''
+  config = dict(  
+    sensor_labels=[str(l) for l in sensor_labels], 
+    sample_rate=float(sample_rate),
+    hardware_id=str(hardware_id))
+  return json.dumps(config)
+
+
+def deserialize_stream_config(string):
+  d = json.loads(string)
+  sensor_labels = d['sensor_labels']
+  sample_rate = float(d['sample_rate'])
+  hardware_id = d.get('hardware_id', 'undefined')
+  return sensor_labels, sample_rate, hardware_id
+
+
 def serialize_singles(sample):
   r'''
   Convert a single single precision sample to a JSON compatible string.
