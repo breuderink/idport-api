@@ -42,3 +42,4 @@ def test_serialize_samples():
   # Test if the representation is not too inefficient; in compressed
   # form it should *improve* upon the raw binary form:
   assert len(r.encode('zip')) < n * p * 4
+
