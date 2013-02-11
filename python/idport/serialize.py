@@ -1,22 +1,34 @@
 import json
 import numpy as np
 
-
-def serialize_stream_config(sensor_labels, sample_rate, hardware_id):
-  '''Encode streaming configuration in JSON.'''
-  config = dict(  
-    sensor_labels=[str(l) for l in sensor_labels], 
-    sample_rate=float(sample_rate),
-    hardware_id=str(hardware_id))
-  return json.dumps(config, sort_keys=True)
+class StreamConfig:
+  def __init__(self, sensor_labels=[], sample_rate=0., hardware_id=''):
+    self.sensor_labels = list(sensor_labels)
+    self.sample_rate = float(sample_rate)
+    self.hardware_id = str(hardware_id)
 
 
-def deserialize_stream_config(string):
-  d = json.loads(string)
-  sensor_labels = d['sensor_labels']
-  sample_rate = float(d['sample_rate'])
-  hardware_id = d.get('hardware_id', 'undefined')
-  return sensor_labels, sample_rate, hardware_id
+  @classmethod
+  def fromstring(cls, s):
+    d = json.loads(s)
+    sensor_labels = d['sensor_labels']
+    sample_rate = d['sample_rate']
+    hardware_id = d.get('hardware_id', 'undefined')
+    return cls(sensor_labels, sample_rate, hardware_id)
+
+
+  def tostring(self):
+    config = dict(  
+      sensor_labels=[str(l) for l in self.sensor_labels], 
+      sample_rate=float(self.sample_rate),
+      hardware_id=str(self.hardware_id))
+    return json.dumps(config, sort_keys=True)
+
+
+  def __eq__(self, other):
+    return (self.sensor_labels == other.sensor_labels and
+      self.sample_rate == other.sample_rate and
+      self.hardware_id == other.hardware_id)
 
 
 def serialize_singles(sample):

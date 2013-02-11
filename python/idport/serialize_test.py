@@ -8,13 +8,11 @@ def test_serialize_stream_config():
   fs = 1024.
   hw_id = 'blah'
 
-  payload = serialize.serialize_stream_config(labels, fs, hw_id)
+  sc = serialize.StreamConfig(labels, fs, hw_id)
+  payload = sc.tostring()
   assert isinstance(payload, str)
-  labels2, fs2, hw_id = serialize.deserialize_stream_config(payload)
-
-  assert labels2 == labels
-  assert fs2 == fs
-  assert hw_id == hw_id
+  sc2 = serialize.StreamConfig.fromstring(payload)
+  assert sc2 == sc
 
 
 def test_serialize_samples():
