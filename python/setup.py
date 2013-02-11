@@ -14,5 +14,7 @@ setup(
     install_requires=[
         'numpy',
         'requests >= 1.1.0',
+        'nose',
+        'mock'
     ],
 )
