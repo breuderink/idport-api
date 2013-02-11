@@ -1,4 +1,4 @@
-import json
+import json, math
 import numpy as np
 
 class StreamConfig:
@@ -26,7 +26,8 @@ class StreamConfig:
 
 
   def __eq__(self, other):
-    return (self.sensor_labels == other.sensor_labels and
+    return (
+      self.sensor_labels == other.sensor_labels and
       self.sample_rate == other.sample_rate and
       self.hardware_id == other.hardware_id)
 
@@ -59,150 +60,81 @@ def deserialize_singles(string):
   return np.fromstring(string.decode('base64'), '<f4')
 
 
-def serialize_samples(samples, local_time, server_time=None):
-  r'''
-  Serialize a sequence of samples.
 
-  Example
-  -------
-  >>> s1 = [0, 1, 2, 3]
-  >>> s2 = [1, 1, 2, 3]
-  >>> print serialize_samples([s1, s2], 123.)
-  {
-    "local_time": 123.0, 
-    "samples": [
-      "AAAAAAAAgD8AAABAAABAQA==\n", 
-      "AACAPwAAgD8AAABAAABAQA==\n"
-    ]
-  }
-  '''
-  d = dict(
-    samples=[serialize_singles(s) for s in samples], 
-    local_time=local_time)
-  if server_time:  # optionally add server time
-    d['server_time'] = server_time
-
-  return json.dumps(d, indent=2, sort_keys=True)
+class Samples:
+  def __init__(self, samples, local_time=None, server_time=None):
+    self.samples = np.asarray(samples, np.float32)
+    self.local_time = float(local_time) if local_time else None
+    self.server_time = float(server_time) if server_time else None
 
 
-def deserialize_samples(s):
-  r'''
-  Deserialize samples from JSON format.
+  @classmethod
+  def fromstring(cls, s):
+    d = json.loads(s)
+    samples = np.asarray([deserialize_singles(samp) for samp in d['samples']])
+    ltime = d.get('local_time')
+    stime = d.get('server_time')
+    return cls(samples, ltime, stime)
 
-  Returns
-  -------
-  samples : NumPy array with shape (n, p)
-    Two dimensional array with n samples from p sensors, stored in
-    single precision floating point format.
-  local_time : float
-    Client timestamp of moment that the samples were recorded.
-  server_time : float
-    Server timestamp of moment that the samples were received.
+  
+  def tostring(self):
+    d = dict(samples=[serialize_singles(s) for s in self.samples])
+    if self.local_time:
+      d['local_time'] = self.local_time
+    if self.server_time:
+      d['server_time'] = self.server_time
 
-  Example
-  -------
-  First we serialize some samples:
-  >>> S0 = [[0, 1, 2, 3], [1, 1, 2, 3]]
-  >>> payload = serialize_samples(S0, 123.)
-  >>> type(payload)
-  <type 'str'>
+    return json.dumps(d, indent=2, sort_keys=True)
+
+
+  def __eq__(self, other):
+    return (
+      np.array_equal(self.samples, other.samples) and
+      self.local_time == other.local_time and
+      self.server_time == other.server_time)
+
+
+class Annotation:
+  def __init__(self, annotator='', text='', local_time=None,
+    server_time=None, duration=0., offset=0.):
+    self.annotator = str(annotator)
+    self.text = str(text)
+    self.local_time = float(local_time)
+    self.server_time = float(server_time) if server_time else None
+    self.duration = float(duration)
+    self.offset = float(offset)
     
-  Now, we can extract the information again:
-  >>> S, ltime, stime = deserialize_samples(payload)
-  >>> S
-  array([[ 0.,  1.,  2.,  3.],
-         [ 1.,  1.,  2.,  3.]], dtype=float32)
-  >>> ltime
-  123.0
-  >>> stime
-  nan
-  '''
-  d = json.loads(s)
-  samples = np.asarray([deserialize_singles(samp) for samp in d['samples']])
-  ltime = float(d.get('local_time', 'nan'))
-  stime = float(d.get('server_time', 'nan'))
-
-  return samples, ltime, stime
+    assert duration >= 0.
 
 
-def serialize_annotation(annotator, text, local_time, 
-  server_time=None, duration=0., offset=0.):
-  r'''
-  Serialize an annotation of an event.
-
-  Example
-  -------
-  >>> print serialize_annotation('me', 'hello', 10)
-  {
-    "annotator": "me", 
-    "duration": 0.0, 
-    "local_time": 10.0, 
-    "offset": 0.0, 
-    "text": "hello"
-  }
-
-  >>> print serialize_annotation('me', 'hello', 10, 10.02, 1, -.5)
-  {
-    "annotator": "me", 
-    "duration": 1.0, 
-    "local_time": 10.0, 
-    "offset": -0.5, 
-    "server_time": 10.02, 
-    "text": "hello"
-  }
-  '''
-  assert duration >= 0., 'Negative durations are not permitted!'
-
-  d = dict(
-    annotator=str(annotator),
-    text=str(text),
-    local_time=float(local_time),
-    duration=float(duration),
-    offset=float(offset))
-
-  # Add optional fields.
-  if server_time:
-    d['server_time'] = float(server_time)
-
-  return json.dumps(d, indent=2, sort_keys=True)
+  @classmethod
+  def fromstring(cls, s):
+    d = json.loads(s)
+    return cls(
+      annotator=d.get('annotator'),
+      text=d.get('text', ''),
+      local_time=d.get('local_time', 'nan'),
+      server_time=d.get('server_time', 'nan'),
+      duration=d.get('duration', 0),
+      offset=d.get('offset', 0))
 
 
-def deserialize_annotation(string):
-  r'''
-  Deserialize an annotation of an event.
+  def tostring(self):
+    d = dict(annotator=self.annotator, text=self.text,
+      local_time=self.local_time, duration=self.duration,
+      offset=self.offset)
 
-  Returns
-  -------
-  annotator : str
-    String describing the annotator for this event.
-  text : str
-    Description of this event.
-  local_time : float
-    Timestamp of generation of event. Note that this does not have to be
-    the start of the event, nor the end!
-  server_time : float
-    Timestamp of the moment this annotation was received by the server.
-  duration : float
-    Duration of this event, in seconds.
-  offset : float
-    Offset of start of event from local_time: a negative value indicates
-    that the event started /before/ the timestamp was generated.
+    if self.server_time:
+      d['server_time'] = self.server_time
 
-  Example
-  -------
-  >>> payload = json.dumps(dict(
-  ...   annotator='me',
-  ...   text='hello',
-  ...   local_time=10.0))
-  >>> deserialize_annotation(payload)
-  (u'me', u'hello', 10.0, nan, 0.0, 0.0)
-  '''
-  d = json.loads(string)
-  annotator = d.get('annotator')
-  text = d.get('text', '')
-  ltime = float(d.get('local_time', 'nan'))
-  stime = float(d.get('server_time', 'nan'))
-  duration = float(d.get('duration', 0))
-  offset = float(d.get('offset', 0))
+    return json.dumps(d, indent=2, sort_keys=True)
 
-  return annotator, text, ltime, stime, duration, offset
+
+  def __eq__(self, other):
+    return (
+      self.annotator == other.annotator and
+      self.text == other.text and
+      self.local_time == other.local_time and
+      self.server_time == other.server_time and
+      self.duration == other.duration and
+      self.offset == other.offset)
