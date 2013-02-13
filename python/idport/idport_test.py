@@ -43,7 +43,7 @@ def test_post_samples(mock_post):
   # Verify URL and data posted to URL.
   (url,), kwargs = mock_post.call_args
   assert url == 'http://example.com/u/test-user/s/test-stream/samples'
-  assert kwargs['data'] == serialize.serialize_samples(S, local_time=t)
+  assert kwargs['data'] == serialize.Samples(S, local_time=t).tostring()
 
   # Check that errors are raised.
   mock_r.raise_for_status.assert_called_with()

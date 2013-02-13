@@ -16,8 +16,8 @@ def post_stream(url, user_id, sensor_labels, sample_rate, hardware_id):
   stream_id : str
     An identifier for the newly created stream.
   '''
-  payload = serialize.serialize_stream_config(
-    sensor_labels, sample_rate, hardware_id)
+  payload = serialize.StreamConfig(
+    sensor_labels, sample_rate, hardware_id).tostring()
   r = requests.post('%s/u/%s/s' % (url, user_id), data=payload)
   r.raise_for_status()  # Raise exception on error.
   return r.json()['stream_id']
@@ -28,7 +28,7 @@ def get_stream(url, user_id, stream_id):
 
 
 def post_samples(url, user_id, stream_id, samp, local_time):
-  payload = serialize.serialize_samples(samp, local_time)
+  payload = serialize.Samples(samp, local_time).tostring()
   r = requests.post('%s/u/%s/s/%s/samples' % (url, user_id, stream_id),
     data=payload)
   r.raise_for_status()  # Raise exception on error.
