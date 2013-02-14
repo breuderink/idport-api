@@ -47,7 +47,7 @@ if __name__ == '__main__':
     S = np.sin(T * freqs)
 
     # Post samples to server.
-    idport.post_samples(args.idport_url, args.user_id, stream_id, S)
+    idport.post_samples(args.idport_url, args.user_id, stream_id, S, time.time())
     
     # Update sample count and wait appropriate time.
     i += args.chunk_size
