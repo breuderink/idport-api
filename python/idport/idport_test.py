@@ -13,15 +13,13 @@ def test_post_stream(mock_post):
   mock_post.return_value = mock_r
 
   # Do the actual call.
-  labels, fs, hw_id = ['a', 'b', 'c'], 64, 'test_hw'
-  stream_id = idport.post_stream(
-    'http://example.com', 'test-user', labels, fs, hw_id)
+  stream_cfg = serialize.StreamConfig(['a', 'b', 'c'], 64, 'test_hw')
+  stream_id = idport.post_stream('http://example.com', 'test-user', stream_cfg)
 
   # Verify URL and data posted to URL.
   (url,), kwargs = mock_post.call_args
   assert url == 'http://example.com/u/test-user/s'
-  assert json.loads(kwargs['data']) == json.loads(json.dumps(
-    dict(hardware_id=hw_id, sample_rate=fs, sensor_labels=labels)))
+  assert serialize.StreamConfig.fromstring(kwargs['data']) == stream_cfg
 
   # Check that errors are raised.
   mock_r.raise_for_status.assert_called_with()
@@ -36,14 +34,14 @@ def test_post_samples(mock_post):
   mock_post.return_value = mock_r
 
   # Do the actual call.
-  t, S = 123.4, np.random.randn(2, 6)
+  samp = serialize.Samples(np.random.randn(2, 6), 123.4)
   stream_id = idport.post_samples(
-    'http://example.com', 'test-user', 'test-stream', S, local_time=t)
+    'http://example.com', 'test-user', 'test-stream', samp)
 
   # Verify URL and data posted to URL.
   (url,), kwargs = mock_post.call_args
   assert url == 'http://example.com/u/test-user/s/test-stream/samples'
-  assert kwargs['data'] == serialize.Samples(S, local_time=t).tostring()
+  assert kwargs['data'] == samp.tostring()
 
   # Check that errors are raised.
   mock_r.raise_for_status.assert_called_with()

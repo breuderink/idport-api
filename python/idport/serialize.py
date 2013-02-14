@@ -138,3 +138,23 @@ class Annotation:
       self.server_time == other.server_time and
       self.duration == other.duration and
       self.offset == other.offset)
+
+
+class Detections:
+  def __init__(self, prob_dict):
+    self.probabilities = dict(prob_dict)
+    assert all([0. <= v <= 1. for v in self.probabilities.values()])
+
+
+  @classmethod
+  def fromstring(cls, s):
+    d = json.loads(s)
+    return cls(d.get('detection', {}))
+
+
+  def tostring(self):
+    return json.dumps(dict(detection=self.probabilities))
+
+
+  def __eq__(self, other):
+    return (self.probabilities == other.probabilities)

@@ -2,12 +2,10 @@ import logging, argparse, json, time
 import numpy as np
 import requests
 
-import serialize
 
 log = logging.getLogger(__name__)
 
-
-def post_stream(url, user_id, sensor_labels, sample_rate, hardware_id):
+def post_stream(url, user_id, sensor_config):
   '''
   Create a new stream by posting header information for the stream.
 
@@ -16,9 +14,8 @@ def post_stream(url, user_id, sensor_labels, sample_rate, hardware_id):
   stream_id : str
     An identifier for the newly created stream.
   '''
-  payload = serialize.StreamConfig(
-    sensor_labels, sample_rate, hardware_id).tostring()
-  r = requests.post('%s/u/%s/s' % (url, user_id), data=payload)
+  r = requests.post('%s/u/%s/s' % (url, user_id), 
+    data=sensor_config.tostring())
   r.raise_for_status()  # Raise exception on error.
   return r.json()['stream_id']
 
@@ -27,10 +24,9 @@ def get_stream(url, user_id, stream_id):
   raise NotImplementedError
 
 
-def post_samples(url, user_id, stream_id, samp, local_time):
-  payload = serialize.Samples(samp, local_time).tostring()
+def post_samples(url, user_id, stream_id, samples):
   r = requests.post('%s/u/%s/s/%s/samples' % (url, user_id, stream_id),
-    data=payload)
+    data=samples.tostring())
   r.raise_for_status()  # Raise exception on error.
 
 

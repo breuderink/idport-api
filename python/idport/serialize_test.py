@@ -34,3 +34,10 @@ def test_serialize_samples():
 
   assert isinstance(payload, str)
   serialize.Samples.fromstring(payload) == s
+
+
+def test_serialize_detections():
+  d = serialize.Detections(dict(a=0.1, b=0.3))
+  payload = d.tostring()
+  assert isinstance(payload, str)
+  assert serialize.Detections.fromstring(payload) == d
