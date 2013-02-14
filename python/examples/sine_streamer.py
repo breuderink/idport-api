@@ -22,9 +22,11 @@ if __name__ == '__main__':
   args = parser.parse_args()
   
   # Setup output.
-  logging.basicConfig(level=logging.INFO)
+  logging.basicConfig(level=logging.WARNING)
   if args.verbose:
     log.setLevel(logging.DEBUG)
+  else:
+    log.setLevel(logging.INFO)
   np.set_printoptions(precision=2)
 
   # Setup stream.  
@@ -36,6 +38,7 @@ if __name__ == '__main__':
   log.info('Created stream %s.', stream_id)
 
   # Start streaming sine waves.
+  log.info('Streaming...')
   i = 0
   duration = args.chunk_size / args.sample_rate
   while True:
@@ -43,7 +46,6 @@ if __name__ == '__main__':
 
     # Create new samples.
     C = i + np.hstack([np.arange(args.chunk_size).reshape(-1, 1)] * len(freqs))
-    print C
     T = C / args.sample_rate
     S = np.sin(T * freqs)
 
