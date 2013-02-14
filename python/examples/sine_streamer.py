@@ -30,8 +30,9 @@ if __name__ == '__main__':
   # Setup stream.  
   freqs = np.arange(4)
   labels = ['%.2f Hz sine' % freq for freq in freqs]
-  stream_id = idport.post_stream(args.idport_url, args.user_id, labels, 
-    args.sample_rate, args.hardware_id)
+  stream_config = idport.StreamConfig(labels, args.sample_rate,
+    args.hardware_id)
+  stream_id = idport.post_stream(args.idport_url, args.user_id, stream_config)
   log.info('Created stream %s.', stream_id)
 
   # Start streaming sine waves.
@@ -47,7 +48,8 @@ if __name__ == '__main__':
     S = np.sin(T * freqs)
 
     # Post samples to server.
-    idport.post_samples(args.idport_url, args.user_id, stream_id, S, time.time())
+    idport.post_samples(args.idport_url, args.user_id, stream_id, 
+      idport.Samples(S, time.time()))
     
     # Update sample count and wait appropriate time.
     i += args.chunk_size
