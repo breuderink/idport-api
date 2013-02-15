@@ -12,7 +12,7 @@ if __name__ == '__main__':
     help='Identifier of the hardware setup.')
   parser.add_argument('--chunk-size', default=16, type=int,
     help='Number of samples to read and send at once.')
-  parser.add_argument('--idport-url', default='http://localhost:5000',
+  parser.add_argument('--idport-url', default='http://localhost:8080',
     help='URL of IDport REST API.')
   parser.add_argument('--user-id', default='test-user')
   parser.add_argument('--stream-id', default='test-stream')
