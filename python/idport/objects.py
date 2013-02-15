@@ -149,11 +149,11 @@ class Detections:
   @classmethod
   def fromstring(cls, s):
     d = json.loads(s)
-    return cls(d.get('detection', {}))
+    return cls(d.get('probabilities', {}))
 
 
   def tostring(self):
-    return json.dumps(dict(detection=self.probabilities))
+    return json.dumps(dict(probabilities=self.probabilities))
 
 
   def __eq__(self, other):
