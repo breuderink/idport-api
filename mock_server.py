@@ -29,8 +29,9 @@ def samples(user_id, stream_id):
 @app.route('/u/<user_id>/s/<stream_id>/detection')
 def get_detection(user_id, stream_id):
   time.sleep(.1)  # Simulate processing time.
-  scores = {'random' : random.random()}
-  return flask.jsonify(detection=scores, user_id=user_id, stream_id=stream_id)
+  probabilities = {'random' : random.random()}
+  return flask.jsonify(probabilities=probabilities, user_id=user_id, 
+    stream_id=stream_id)
 
 
 @app.route('/u/<user_id>/s/<stream_id>/annotations', methods=['POST'])

@@ -218,9 +218,9 @@ int idp_read_detection(const idp_response_t *response, const char
     goto cleanup;
   }
 
-  json = json_object_get(json, "detection");
+  json = json_object_get(json, "probabilities");
   if (!json) {
-    fprintf(stderr, "No detection key in JSON response!\n");
+    fprintf(stderr, "No probabilities key in JSON response!\n");
     status = -3;
     goto cleanup;
   }

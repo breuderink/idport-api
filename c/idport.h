@@ -8,7 +8,7 @@
 #include <jansson.h>      /* Can be installed easily with Homebrew on OSX. */
 
 #define IDP_URLLEN 256
-#define IDP_NREQ 32        /* Maximum simultaneous requests. */
+#define IDP_NREQ 64        /* Maximum simultaneous requests. */
 #define IDP_BUFSIZE 4048   /* Maximum size of response. */
 
 
