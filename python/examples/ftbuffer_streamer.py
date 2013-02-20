@@ -1,4 +1,4 @@
-import logging, argparse, json, time
+import logging, argparse, json, time, sys
 import numpy as np
 import ftbuffer  # This is the Python client for the FieldTrip buffer.
 import idport
@@ -63,6 +63,10 @@ if __name__ == '__main__':
     nsamples, nevents = ftc.poll()
     log.debug('Server holds %d samples and %d events.', nsamples, nevents)
     assert nevents == 0, 'Handling of events is not implemented!'
+    lag = nsamples - i
+    if lag > (stream_config.sample_rate * .1):
+      log.warning('Lagging %d samples', lag)
+    assert lag < stream_config.sample_rate * .2
 
     log.debug('Waiting for new data...')
     ftc.wait(i + args.chunk_size, 0, 1000)  # TODO: check for off-by-one errors.
