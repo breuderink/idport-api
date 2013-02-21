@@ -4,9 +4,19 @@ from objects import *
 
 
 def test_serialize_stream_config():
+  payload = '''
+  {
+    "description": "", 
+    "hardware_id": "Biosemi", 
+    "sample_rate": 128.0, 
+    "sensor_labels": [
+      "C3", 
+      "Cz", 
+      "C4"
+    ]
+  }
+  '''
   sc = StreamConfig('C3 Cz C4'.split(), 128., 'Biosemi')
-  payload = sc.tostring()
-  assert isinstance(payload, str)
   assert StreamConfig.fromstring(payload) == sc
 
 

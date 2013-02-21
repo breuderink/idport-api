@@ -2,10 +2,12 @@ import json, math
 import numpy as np
 
 class StreamConfig:
-  def __init__(self, sensor_labels=[], sample_rate=0., hardware_id=''):
-    self.sensor_labels = list(sensor_labels)
+  def __init__(self, sensor_labels=[], sample_rate=0., hardware_id='',
+    description=''):
+    self.sensor_labels = [str(l) for l in sensor_labels]
     self.sample_rate = float(sample_rate)
     self.hardware_id = str(hardware_id)
+    self.description = str(description)
 
 
   @classmethod
@@ -14,22 +16,33 @@ class StreamConfig:
     sensor_labels = d['sensor_labels']
     sample_rate = d['sample_rate']
     hardware_id = d.get('hardware_id', 'undefined')
-    return cls(sensor_labels, sample_rate, hardware_id)
+    description = d.get('description', '')
+    return cls(sensor_labels, sample_rate, hardware_id, description)
+
+
+  def todict(self):
+    return dict(  
+      sensor_labels=[str(l) for l in self.sensor_labels], 
+      sample_rate=float(self.sample_rate),
+      hardware_id=str(self.hardware_id),
+      description=str(self.description))
 
 
   def tostring(self):
-    config = dict(  
-      sensor_labels=[str(l) for l in self.sensor_labels], 
-      sample_rate=float(self.sample_rate),
-      hardware_id=str(self.hardware_id))
-    return json.dumps(config, sort_keys=True)
+    return json.dumps(self.todict(), sort_keys=True, indent=2)
+ 
+
+  def __str__(self):
+    return 'Stream with %d channels sampled at %.2fHz' % \
+      (len(self.sensor_labels), self.sample_rate)
 
 
   def __eq__(self, other):
     return (
       self.sensor_labels == other.sensor_labels and
       self.sample_rate == other.sample_rate and
-      self.hardware_id == other.hardware_id)
+      self.hardware_id == other.hardware_id and
+      self.description == other.description)
 
 
 def serialize_singles(sample):
