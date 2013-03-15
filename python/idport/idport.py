@@ -38,6 +38,13 @@ def get_annotation(url, user_id, stream_id):
   raise NotImplementedError
 
 
+def post_detection(url, user_id, stream_id, detections):
+  r = requests.post('%(url)s/u/%(user_id)s/s/%(stream_id)s/detection' % 
+    dict(url=url, user_id=user_id, stream_id=stream_id),
+    data=detections.tostring())
+  r.raise_for_status()  # Raise exception on error.
+
+
 def get_detection(url, user_id, stream_id):
   r = requests.get('%(url)s/u/%(user_id)s/s/%(stream_id)s/detection' % 
     dict(url=url, user_id=user_id, stream_id=stream_id))

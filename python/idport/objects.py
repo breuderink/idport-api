@@ -107,6 +107,12 @@ class Samples:
       self.server_time == other.server_time)
 
 
+  def __str__(self):
+    return 'Samples packet with %d samples from %d sensors.' % \
+      self.samples.shape
+      
+
+
 class Annotation:
   def __init__(self, annotator='', text='', local_time=None,
     server_time=None, duration=0., offset=0.):
@@ -165,8 +171,16 @@ class Detections:
     return cls(d.get('probabilities', {}))
 
 
+  def todict(self):
+    return json.dumps(dict(probabilities=self.probabilities))
+
+
   def tostring(self):
     return json.dumps(dict(probabilities=self.probabilities))
+
+
+  def __str__(self):
+    return 'Detections from %d detectors.' % len(self.probabilities)
 
 
   def __eq__(self, other):
